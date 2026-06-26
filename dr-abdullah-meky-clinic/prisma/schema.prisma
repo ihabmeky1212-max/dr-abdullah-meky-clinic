@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  STAFF
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  email     String   @unique
+  fullName  String
+  role      Role     @default(STAFF)
+  phone     String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Patient {
+  id             String          @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String
+  dateOfBirth    DateTime
+  gender         Gender
+  address        String?
+  bloodType      String?
+  allergies      String?
+  emergencyContact String?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
+
+  @@index([lastName, firstName])
+  @@index([phone])
+}
+
+model DoctorSchedule {
+  id        String   @id @default(uuid())
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([dayOfWeek, startTime])
+}
+
+model Appointment {
+  id             String            @id @default(uuid())
+  patientId      String
+  patient        Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  date           DateTime
+  startTime      String
+  endTime        String
+  status         AppointmentStatus @default(SCHEDULED)
+  reason         String?
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  medicalRecords MedicalRecord[]
+
+  @@index([date])
+  @@index([status])
+}
+
+model MedicalRecord {
+  id            String       @id @default(uuid())
+  patientId     String
+  patient       Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  diagnosis     String
+  symptoms      String?
+  prescription  String?
+  vitalSigns    String?
+  notes         String?
+  recordedAt    DateTime     @default(now())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([patientId])
+  @@index([recordedAt])
+}
