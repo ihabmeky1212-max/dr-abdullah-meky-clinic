@@ -255,6 +255,11 @@ export async function bookPublicAppointment(data: FormData) {
 });
 
 const endTime = startTime;
+console.log("Creating appointment...");
+console.log(patient.id);
+console.log(date);
+console.log(startTime);
+console.log(endTime);
   await prisma.appointment.create({
     data: {
       patientId: patient.id,
@@ -270,7 +275,7 @@ const endTime = startTime;
   return { success: true };
 
 } catch (error) {
-  console.error(error);
+ console.error("BOOK ERROR:", error);
 
   return {
     error: "Failed to book appointment. Please try again.",
