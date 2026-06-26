@@ -242,41 +242,38 @@ export async function bookPublicAppointment(data: FormData) {
   }
 
   try {
-    let patient = await prisma.patient.findFirst({
-      where: { phone },
-    });
 
-    if (!patient) {
-      patient = await prisma.patient.create({
-        data: {
-          firstName,
-          lastName,
-          phone,
-          email: email || null,
-          dateOfBirth: new Date(dateOfBirth),
-          gender,
-        },
-      });
-    }
+    const patient = await prisma.patient.create({
+  data: {
+    firstName,
+    lastName,
+    phone,
+    email,
+    dateOfBirth: new Date(dateOfBirth),
+    gender,
+  },
+});
 
-    const [hours, minutes] = startTime.split(":").map(Number);
-    const endHour = hours + 1;
-    const endTime = `${String(endHour).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+const endTime = startTime;
+  await prisma.appointment.create({
+    data: {
+      patientId: patient.id,
+      date: new Date(date),
+      startTime,
+      endTime,
+      reason,
+      status: "SCHEDULED",
+    },
+  });
 
-    await prisma.appointment.create({
-      data: {
-        patientId: patient.id,
-        date: new Date(date),
-        startTime,
-        endTime,
-        reason,
-        status: "SCHEDULED",
-      },
-    });
+  revalidatePath("/dashboard/appointments");
+  return { success: true };
 
-    revalidatePath("/dashboard/appointments");
-    return { success: true };
-  } catch {
-    return { error: "Failed to book appointment. Please try again." };
-  }
+} catch (error) {
+  console.error(error);
+
+  return {
+    error: "Failed to book appointment. Please try again.",
+  };
+}
 }
