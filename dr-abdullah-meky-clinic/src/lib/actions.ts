@@ -278,7 +278,8 @@ console.log(endTime);
  console.error("BOOK ERROR:", error);
 
   return {
-    error: "Failed to book appointment. Please try again.",
-  };
+error: error instanceof Error
+  ? error.message
+  : "Failed to book appointment. Please try again.",  };
 }
 }
