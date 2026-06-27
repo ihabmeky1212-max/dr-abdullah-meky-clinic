@@ -4,7 +4,7 @@ import { Hero, Services, About, CTA } from "@/components/landing/sections";
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col" dir="rtl">
       <Header />
       <main className="flex-1">
         <Hero />
